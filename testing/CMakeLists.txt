@@ -3,8 +3,6 @@ project(MemGuardTest)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_compile_definitions(-DMEMGUARD_FULL)
-
 add_executable(MemGuardTest "main.c")
 add_executable(MemGuardTestCpp "main.cpp")
 

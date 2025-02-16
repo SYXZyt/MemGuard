@@ -2,7 +2,13 @@
 #include "MemGuardWatch.h"
 
 static MemGuardWatch watcher;
-static bool monitorPointers = false;
+
+static constexpr bool monitorPointers = 
+#ifdef MEMGUARD_ENABLE
+true;
+#else
+false;
+#endif
 
 static bool lock = false;
 
@@ -13,15 +19,8 @@ static void DefaultLogCallback(const char* message)
 
 static memguard_LogCallback logCallback = DefaultLogCallback;
 
-void memguard_Init(bool monitorPointers)
+void memguard_Report()
 {
-	::monitorPointers = monitorPointers;
-}
-
-void memguard_Shutdown()
-{
-	monitorPointers = false;
-
 	watcher.PrintLeaks();
 	watcher.Reset();
 }

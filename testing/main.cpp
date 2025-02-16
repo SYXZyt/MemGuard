@@ -13,8 +13,6 @@ public:
 
 int main()
 {
-	MemGuard::Init();
-
 	MG_PREPARE;
 	MyClass* myClass = MemGuard::Allocator::New<MyClass>(5);
 	MyClass* myClass2 = MG_ALLOC.New<MyClass>(10);
@@ -28,6 +26,6 @@ int main()
 	MemGuard::Allocator::DeleteArray(array, 5);
 
 	//Report a leak from myClass2
-	MemGuard::Shutdown();
+	MemGuard::Report();
 	return 0;
 }

@@ -9,8 +9,6 @@ typedef struct Vec2
 
 int main(int argc, char** argv)
 {
-	memguard_Init(true);
-
 	Vec2* vec = mgMalloc(sizeof(Vec2));
 	Vec2* vec2 = mgMalloc(sizeof(Vec2));
 
@@ -20,7 +18,7 @@ int main(int argc, char** argv)
 	mgFree(array);
 
 	//Reports one leak from vec2
-	memguard_Shutdown();
+	memguard_Report();
 
 	return 0;
 }

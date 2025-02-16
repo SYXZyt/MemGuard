@@ -16,7 +16,7 @@ typedef void (*memguard_LogCallback)(const char* message);
 
 MEMGUARD_BEGIN
 
-#ifdef MEMGUARD_FULL
+#ifdef MEMGUARD_ENABLE
 #define mgMalloc(size) memguard_MallocEx(size, __FILE__, __LINE__)
 #define mgCalloc(num, size) memguard_CallocEx(num, size, __FILE__, __LINE__)
 #define mgRealloc(ptr, size) memguard_ReallocEx(ptr, size, __FILE__, __LINE__)
@@ -30,8 +30,7 @@ MEMGUARD_BEGIN
 #define mgFree(ptr) memguard_Free(ptr)
 #endif
 
-extern MEMGUARD_API void memguard_Init(bool monitorPointers);
-extern MEMGUARD_API void memguard_Shutdown();
+extern MEMGUARD_API void memguard_Report();
 
 extern MEMGUARD_API void* memguard_MallocEx(size_t size, const char* file, int line);
 extern MEMGUARD_API void* memguard_CallocEx(size_t num, size_t size, const char* file, int line);

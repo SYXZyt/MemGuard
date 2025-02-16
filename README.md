@@ -9,6 +9,11 @@ MemGuard can be built into both a static or shared library. Generally shared is 
 Say you have a game engine, if your engine is a shared library, use MemGuard as a shared library. If your engine is a static library, use MemGuard as a static library.
 
 ### Macros
+To enable the tracking system, you will need to set `MEMGUARD_ENABLE_TRACKING` to `ON` in the CMake configuration, or before including the sub directory. (It is set to `ON` by default)
+This will define the `MEMGUARD_ENABLE` macros for both the library, and your project. If you do not use CMake, make sure to define that macro when building the library.
+
+You should only define this for debug builds of your application. The system can use a lot of memory and slow down the program so it is not recommended for release builds.
+
 MemGuard provides macros to provide additional data to the watch system. This is done so that when MemGuard reports leaks, it will tell you where the object was created.
 This isn't perfect since if you have a string class, it will tell you that the string caused the leak, but not where that string was made. In the future, a callstack log may also be added.
 To use the extra data, you must define the following macro: `MEMGUARD_FULL`
@@ -26,8 +31,7 @@ If you use the macros, then you gain the benefit of the extra data, but it does 
 
 ### C
 For C, memguard is as simple as using normal memory functions.
-Just make sure that you call `memguard_Init(enablePointerTracking)` at the top of main, and `memguard_Shutdown()` at the end of main.
-The flag in `memguard_Init` is a boolean that enables or disables pointer tracking. This refers to the system that checks for leaks. Ideally you would set this to false in non-debug builds.
+Just make sure that you call `memguard_Init(enablePointerTracking)` at the top of main, and `memguard_Report()` at the end of main.
 The shutdown function will report any memory that was not freed and will clear all pointers, ready to be used again.
 
 ```c
@@ -39,8 +43,6 @@ typedef struct Vec2
 
 int main(int argc, char** argv)
 {
-	memguard_Init(true);
-
 	Vec2* vec = mgMalloc(sizeof(Vec2));
 	Vec2* vec2 = mgMalloc(sizeof(Vec2));
 
@@ -50,7 +52,7 @@ int main(int argc, char** argv)
 	mgFree(array);
 
 	//Reports one leak from vec2
-	memguard_Shutdown();
+	memguard_Report();
 
 	return 0;
 }
@@ -69,7 +71,7 @@ This header also contains a `New` and `Delete` so you can use it on objects to c
 
 Another macro can be used to set the extra data. This is either `MEMGUARD_ALLOC` or `MEMGUARD_PREPARE`. These macros return a reference to the allocator so you can directly call a function after the macro.
 
-Like with C, make sure to init and shutdown the library. Since this is C++, the pointer tracking parameter in init is optional, and will be default set to true.
+Like with C, make sure to shutdown the library with the report function.
 
 ```cpp
 #include <MemGuard/cpp/MemGuard.hpp>
@@ -87,8 +89,6 @@ public:
 
 int main()
 {
-	MemGuard::Init();
-
 	MG_PREPARE;
 	MyClass* myClass = MemGuard::Allocator::New<MyClass>(5);
 	MyClass* myClass2 = MG_ALLOC.New<MyClass>(10);
@@ -102,7 +102,7 @@ int main()
 	MemGuard::Allocator::DeleteArray(array, 5);
 
 	//Report a leak from myClass2
-	MemGuard::Shutdown();
+	MemGuard::Report();
 	return 0;
 }
 ```

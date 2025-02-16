@@ -12,14 +12,9 @@
 
 namespace MemGuard
 {
-	inline void Init(bool monitorPointers = true)
+	inline void Report()
 	{
-		memguard_Init(monitorPointers);
-	}
-
-	inline void Shutdown()
-	{
-		memguard_Shutdown();
+		memguard_Report();
 	}
 
 	class Allocator final
