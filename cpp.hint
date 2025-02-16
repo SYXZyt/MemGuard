@@ -6,3 +6,4 @@
 #define MEMGUARD_API
 #define MEMGUARD_BEGIN extern "C" {
 #define MEMGUARD_BEGIN
+#define MG_ALLOC MemGuard::Allocator::Prepare(__FILE__, __LINE__)

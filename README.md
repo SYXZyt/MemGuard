@@ -153,6 +153,7 @@ int main()
 ## Known Issues
 - The library is not thread safe. If you are using threads, you must ensure that only one thread is using the library at a time.
 - If using the C++ header, then you cannot allocate an array of pointers using the C++ `NewArray` allocator. You must manually do it with the other functions.
+- False positives from any heap allocated data in a static object. 
 
 ## Building
 This library uses CMake. To build, it is as simple as including the source and running `add_subdirectory`.
