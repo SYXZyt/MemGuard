@@ -28,6 +28,11 @@ namespace MemGuard
 		static inline const char* _file = nullptr;
 		static inline int _line = 0;
 
+		static inline void Reset()
+		{
+			_file = nullptr;
+		}
+
 	public:
 		static Allocator& Prepare(const char* file, int line)
 		{
@@ -41,21 +46,25 @@ namespace MemGuard
 		static inline void* Malloc(size_t size)
 		{
 			return memguard_MallocEx(size, _file, _line);
+			Reset();
 		}
 
 		static inline void* Calloc(size_t num, size_t size)
 		{
 			return memguard_CallocEx(num, size, _file, _line);
+			Reset();
 		}
 
 		static inline void* Realloc(void* ptr, size_t size)
 		{
 			return memguard_ReallocEx(ptr, size, _file, _line);
+			Reset();
 		}
 
 		static inline void Free(void* ptr)
 		{
 			memguard_FreeEx(ptr, _file, _line);
+			Reset();
 		}
 
 		template <typename T, typename... Args>
