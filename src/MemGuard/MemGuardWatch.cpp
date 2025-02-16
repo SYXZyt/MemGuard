@@ -5,6 +5,8 @@
 
 void MemGuardWatch::AddAllocation(void* ptr, const char* file, std::size_t line, std::size_t size)
 {
+	std::lock_guard<std::mutex> guard(mutex);
+
 	MetaData data;
 	data.file = file ? file : "";
 	data.line = line;
@@ -15,6 +17,8 @@ void MemGuardWatch::AddAllocation(void* ptr, const char* file, std::size_t line,
 
 bool MemGuardWatch::RemoveAllocation(void* ptr, const char* file, std::size_t line)
 {
+	std::lock_guard<std::mutex> guard(mutex);
+
 	if (!allocations.count(ptr))
 	{
 		std::stringstream ss;
@@ -33,6 +37,8 @@ bool MemGuardWatch::RemoveAllocation(void* ptr, const char* file, std::size_t li
 
 void MemGuardWatch::PrintLeaks()
 {
+	std::lock_guard<std::mutex> guard(mutex);
+
 	for (auto& pair : allocations)
 	{
 		std::stringstream ss;

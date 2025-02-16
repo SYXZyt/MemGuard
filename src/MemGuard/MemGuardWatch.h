@@ -1,6 +1,7 @@
 #pragma once
 #include <unordered_map>
 #include <string>
+#include <mutex>
 
 class MemGuardWatch final
 {
@@ -11,6 +12,8 @@ private:
 		std::size_t line = 0;
 		std::size_t size = 0;
 	};
+
+	std::mutex mutex;
 
 	std::unordered_map<void*, MetaData> allocations;
 
