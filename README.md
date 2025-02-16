@@ -162,4 +162,3 @@ Finally, add the include folder which is `MemGuardDir/include/`.
 
 ## Future Plans
 - Add a callstack log to show where the object was created.
-- Add thread safety.

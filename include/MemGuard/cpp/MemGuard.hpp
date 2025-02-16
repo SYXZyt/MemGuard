@@ -7,8 +7,13 @@
 #include <new>
 #include <utility>
 
+#ifdef MEMGUARD_ENABLE
 #define MG_ALLOC MemGuard::Allocator::Prepare(__FILE__, __LINE__)
 #define MG_PREPARE MemGuard::Allocator::Prepare(__FILE__, __LINE__)
+#else
+#define MG_ALLOC
+#define MG_PREPARE
+#endif
 
 namespace MemGuard
 {
