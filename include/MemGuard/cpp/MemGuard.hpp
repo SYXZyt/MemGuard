@@ -63,6 +63,9 @@ namespace MemGuard
 
 		static inline void Free(void* ptr)
 		{
+			if (!ptr)
+				return;
+
 			memguard_FreeEx(ptr, _file, _line);
 			Reset();
 		}
@@ -88,6 +91,9 @@ namespace MemGuard
 		template <typename T>
 		static inline void Delete(T* ptr)
 		{
+			if (!ptr)
+				return;
+
 			ptr->~T();
 			Free(ptr);
 		}
@@ -95,6 +101,9 @@ namespace MemGuard
 		template <typename T>
 		static inline void DeleteArray(T* ptr, size_t count)
 		{
+			if (!ptr)
+				return;
+
 			for (size_t i = 0; i < count; i++)
 				(
 					((T*)ptr) + i

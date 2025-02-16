@@ -67,6 +67,9 @@ void* memguard_ReallocEx(void* ptr, size_t size, const char* file, int line)
 
 void memguard_FreeEx(void* ptr, const char* file, int line)
 {
+	if (!ptr)
+		return;
+
 	if (monitorPointers)
 	{
 		if (!watcher.RemoveAllocation(ptr, file, line))
@@ -113,6 +116,9 @@ void* memguard_Realloc(void* ptr, size_t size)
 
 void memguard_Free(void* ptr)
 {
+	if (!ptr)
+		return;
+
 	if (monitorPointers && !lock)
 		if (!watcher.RemoveAllocation(ptr, nullptr, 0))
 			return;
