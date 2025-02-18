@@ -77,17 +77,19 @@ bool MemGuardWatch::RemoveAllocation(void* ptr, const char* file, std::size_t li
 		if (file)
 			ss << "\nAttempted at file: " << file << " at line: " << line;
 
-
-		auto trace = std::stacktrace::current();
-		if (trace.size() > 1)
+		if (stackTrace)
 		{
-			ss << "\n\tStack Trace:\n";
-			ss << GetStackTraceFormatted();
-			ss << '\n';
-		}
+			auto trace = std::stacktrace::current();
+			if (trace.size() > 1)
+			{
+				ss << "\n\tStack Trace:\n";
+				ss << GetStackTraceFormatted();
+				ss << '\n';
+			}
 
-		memguard_LogMessage(ss.str().c_str());
-		return false;
+			memguard_LogMessage(ss.str().c_str());
+			return false;
+		}
 	}
 
 	return true;
