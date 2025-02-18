@@ -2,7 +2,10 @@
 #include <string>
 #include <sstream>
 #include <MemGuard/MemGuard.h>
+
+#ifndef MEMGUARD_NO_STACKTRACE
 #include <stacktrace>
+#endif
 
 bool MemGuardWatch::TryRemoveAllocationFromNonStatic(void* ptr)
 {
@@ -28,6 +31,9 @@ bool MemGuardWatch::TryRemoveAllocationFromStatic(void* ptr)
 
 std::string MemGuardWatch::GetStackTraceFormatted()
 {
+#ifdef MEMGUARD_NO_STACKTRACE
+	return "";
+#else
 	std::stringstream ss;
 	auto trace = std::stacktrace::current();
 
@@ -50,6 +56,7 @@ std::string MemGuardWatch::GetStackTraceFormatted()
 	}
 
 	return ss.str();
+#endif
 }
 
 void MemGuardWatch::AddAllocation(void* ptr, const char* file, std::size_t line, std::size_t size, bool isStatic)
