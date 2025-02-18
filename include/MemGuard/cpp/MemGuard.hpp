@@ -96,9 +96,9 @@ namespace MemGuard
 		}
 	};
 
-	inline void Init()
+	inline void Init(MemGuardFlags flags = MemGuardFlags::MG_NONE)
 	{
-		memguard_Init();
+		memguard_Init(flags);
 	}
 
 	inline void* Malloc(size_t size)

@@ -9,6 +9,8 @@ typedef struct Vec2
 
 int main(int argc, char** argv)
 {
+	memguard_Init(MG_NONE);
+
 	Vec2* vec = mgMalloc(sizeof(Vec2));
 	Vec2* vec2 = mgMalloc(sizeof(Vec2));
 

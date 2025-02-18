@@ -2,6 +2,7 @@
 #include <string>
 #include <sstream>
 #include <MemGuard/MemGuard.h>
+#include <stacktrace>
 
 bool MemGuardWatch::TryRemoveAllocationFromNonStatic(void* ptr)
 {
@@ -25,6 +26,32 @@ bool MemGuardWatch::TryRemoveAllocationFromStatic(void* ptr)
 	return false;
 }
 
+std::string MemGuardWatch::GetStackTraceFormatted()
+{
+	std::stringstream ss;
+	auto trace = std::stacktrace::current();
+
+	int i = 0;
+	for (const auto& entry : trace)
+	{
+		ss << "\t\t";
+		ss << trace.size() - 1 - i++ << "| ";
+		
+		if (!entry.description().empty())
+			ss << entry.description() << "\t\t";
+
+		if (!entry.source_file().empty())
+		{
+			ss << entry.source_file() << ", ";
+			ss << entry.source_line();
+		}
+
+		ss << '\n';
+	}
+
+	return ss.str();
+}
+
 void MemGuardWatch::AddAllocation(void* ptr, const char* file, std::size_t line, std::size_t size, bool isStatic)
 {
 	std::lock_guard<std::mutex> guard(mutex);
@@ -33,6 +60,8 @@ void MemGuardWatch::AddAllocation(void* ptr, const char* file, std::size_t line,
 	data.file = file ? file : "";
 	data.line = line;
 	data.size = size;
+
+	data.stackTrace = stackTrace ? GetStackTraceFormatted() : "";
 
 	(isStatic ? staticAllocations[ptr] : allocations[ptr]) = data;
 }
@@ -47,6 +76,16 @@ bool MemGuardWatch::RemoveAllocation(void* ptr, const char* file, std::size_t li
 		ss << "Tried to free a pointer which MemGuard did not allocate";
 		if (file)
 			ss << "\nAttempted at file: " << file << " at line: " << line;
+
+
+		auto trace = std::stacktrace::current();
+		if (trace.size() > 1)
+		{
+			ss << "\n\tStack Trace:\n";
+			ss << GetStackTraceFormatted();
+			ss << '\n';
+		}
+
 		memguard_LogMessage(ss.str().c_str());
 		return false;
 	}
@@ -68,9 +107,13 @@ void MemGuardWatch::PrintLeaks()
 		if (!data.file.empty())
 			ss << "\nCreated at file: " << data.file << " at line: " << data.line;
 
+		if (stackTrace && !data.stackTrace.empty())
+			ss << "\n\tStack Trace:\n" << data.stackTrace << '\n';
+
 		memguard_LogMessage(ss.str().c_str());
 	}
 
+	if (!staticAllocations.empty())
 	{
 		std::stringstream ss;
 		ss << "Has " << staticAllocations.size() << " static allocation" << (staticAllocations.size() != 1 ? "s" : "") << " not yet removed";

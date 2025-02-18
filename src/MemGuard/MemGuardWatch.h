@@ -9,9 +9,12 @@ private:
 	struct MetaData final
 	{
 		std::string file;
+		std::string stackTrace;
 		std::size_t line = 0;
 		std::size_t size = 0;
 	};
+
+	bool stackTrace = false;
 
 	std::mutex mutex;
 	std::unordered_map<void*, MetaData> allocations;
@@ -23,7 +26,11 @@ private:
 	[[nodiscard]]
 	bool TryRemoveAllocationFromStatic(void* ptr);
 
+	std::string GetStackTraceFormatted();
+
 public:
+	void StackTrace(bool enable) { stackTrace = enable; }
+
 	inline size_t GetSize(void* ptr)
 	{
 		std::lock_guard<std::mutex> guard(mutex);

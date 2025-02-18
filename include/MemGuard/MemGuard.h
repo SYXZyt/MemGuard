@@ -16,6 +16,14 @@ typedef void (*memguard_LogCallback)(const char* message);
 
 MEMGUARD_BEGIN
 
+#define MG_FLAG(id) = (1 << id)
+
+typedef enum MemGuardFlags
+{
+	MG_NONE 		= 0,
+	MG_CALLSTACK	MG_FLAG(0),
+} MemGuardFlags;
+
 #ifdef MEMGUARD_ENABLE
 #define mgMalloc(size) memguard_MallocEx(size, __FILE__, __LINE__)
 #define mgCalloc(num, size) memguard_CallocEx(num, size, __FILE__, __LINE__)
@@ -32,7 +40,7 @@ MEMGUARD_BEGIN
 
 extern MEMGUARD_API void memguard_Report();
 
-extern MEMGUARD_API void memguard_Init();
+extern MEMGUARD_API void memguard_Init(MemGuardFlags flags);
 
 extern MEMGUARD_API void* memguard_MallocEx(size_t size, const char* file, int line);
 extern MEMGUARD_API void* memguard_CallocEx(size_t num, size_t size, const char* file, int line);

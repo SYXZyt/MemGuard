@@ -15,7 +15,7 @@ using u8 = unsigned char;
 
 static MemGuardWatch watcher;
 
-static constexpr bool monitorPointers = 
+static constexpr bool monitorPointers =
 #ifdef MEMGUARD_ENABLE
 true;
 #else
@@ -81,9 +81,11 @@ void memguard_Report()
 	watcher.Reset();
 }
 
-void memguard_Init()
+void memguard_Init(MemGuardFlags flags)
 {
 	staticTrack.isStaticTime = false;
+
+	watcher.StackTrace(flags & MG_CALLSTACK);
 }
 
 void* memguard_MallocEx(size_t size, const char* file, int line)
@@ -161,7 +163,7 @@ void* memguard_Realloc(void* ptr, size_t size)
 
 	if (size == 0)
 	{
-		delete[] (u8*)ptr;
+		delete[](u8*)ptr;
 		return nullptr;
 	}
 
@@ -176,7 +178,7 @@ void* memguard_Realloc(void* ptr, size_t size)
 		watcher.AddAllocation(newPtr, nullptr, 0, size, staticTrack.isStaticTime);
 	}
 
-	delete[] (u8*)ptr;
+	delete[](u8*)ptr;
 
 	return newPtr;
 }
@@ -191,7 +193,7 @@ void memguard_Free(void* ptr)
 		if (!watcher.RemoveAllocation(ptr, nullptr, 0))
 			return;
 
-	delete[] (u8*)ptr;
+	delete[](u8*)ptr;
 }
 
 void memguard_SetLogCallback(memguard_LogCallback callback)

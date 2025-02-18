@@ -103,6 +103,11 @@ Output:
 [MemGuard] Has 1 static allocation not yet removed
 ```
 
+### Callstack
+When initialising the library, you can pass either `MG_CALLSTACK` or `MemGuardFlags::MG_CALLSTACK` to the function and it will enable callstack logging.
+This means that when an error is logged, a full callstack will be logged, better showing where the object was created.
+If you do not wish to use stack tracing, you can pass `MG_NONE` to `memguard_Init` or nothing to `MemGuard::Init`, as it will default to `MG_NONE` if no argument is provided.
+
 ### C
 For C, memguard is as simple as using normal memory functions.
 Just make sure that you call `memguard_Init(enablePointerTracking)` at the top of main, and `memguard_Report()` at the end of main.
@@ -117,7 +122,7 @@ typedef struct Vec2
 
 int main(int argc, char** argv)
 {
-	memguard_Init();
+	memguard_Init(MG_NONE);
 
 	Vec2* vec = mgMalloc(sizeof(Vec2));
 	Vec2* vec2 = mgMalloc(sizeof(Vec2));
@@ -237,6 +242,3 @@ int main()
 This library uses CMake. To build, it is as simple as including the source and running `add_subdirectory`.
 Then link either the shared or static library to your project. These use the target names `MemGuard` and `MemGuardStatic` respectively.
 Finally, add the include folder which is `MemGuardDir/include/`.
-
-## Future Plans
-- Add a callstack log 1to show where the object was created.
