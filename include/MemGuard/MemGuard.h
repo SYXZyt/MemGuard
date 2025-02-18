@@ -48,4 +48,6 @@ extern MEMGUARD_API void memguard_SetLogCallback(memguard_LogCallback callback);
 extern MEMGUARD_API void memguard_ResetLogCallback();
 extern MEMGUARD_API void memguard_LogMessage(const char* message);
 
+extern MEMGUARD_API size_t memguard_GetSize(void* ptr);
+
 MEMGUARD_END

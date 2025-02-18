@@ -11,6 +11,7 @@ Say you have a game engine, if your engine is a shared library, use MemGuard as 
 ### Macros
 To enable the tracking system, you will need to set `MEMGUARD_ENABLE_TRACKING` to `ON` in the CMake configuration, or before including the sub directory. (It is set to `ON` by default)
 This will define the `MEMGUARD_ENABLE` macros for both the library, and your project. If you do not use CMake, make sure to define that macro when building the library.
+MemGuard will still track pointers when this is disabled since it needs to know the size of arrays, but it will not report any leaks and will not store any of the extra data since it would be a waste of memory
 
 You should only define this for debug builds of your application. The system can use a lot of memory and slow down the program so it is not recommended for release builds.
 

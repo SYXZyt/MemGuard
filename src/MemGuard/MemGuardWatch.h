@@ -14,10 +14,17 @@ private:
 	};
 
 	std::mutex mutex;
-
 	std::unordered_map<void*, MetaData> allocations;
 
+
 public:
+	inline size_t GetSize(void* ptr)
+	{
+		std::lock_guard<std::mutex> guard(mutex);
+
+		return allocations.at(ptr).size;
+	}
+
 	void AddAllocation(void* ptr, const char* file, std::size_t line, std::size_t size);
 	[[nodiscard]] bool RemoveAllocation(void* ptr, const char* file, std::size_t line);
 	void PrintLeaks();

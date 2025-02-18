@@ -14,7 +14,7 @@ public:
 int main()
 {
 	MG_PREPARE;
-	MyClass* myClass = MemGuard::Allocator::New<MyClass>(5);
+	MyClass* myClass = MemGuard::New<MyClass>(5);
 	MyClass* myClass2 = MG_ALLOC.New<MyClass>(10);
 
 	MyClass* array = MG_ALLOC.NewArray<MyClass>(5, 1);
@@ -23,7 +23,7 @@ int main()
 	MemGuard::Allocator::Delete(myClass);
 
 	printf("Freeing array\n");
-	MemGuard::Allocator::DeleteArray(array, 5);
+	MemGuard::Allocator::DeleteArray(array);
 
 	//Report a leak from myClass2
 	MemGuard::Report();

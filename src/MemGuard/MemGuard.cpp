@@ -1,5 +1,12 @@
 ﻿#include <MemGuard/MemGuard.h>
+#include <MemGuard/cpp/MemGuard.hpp>
 #include "MemGuardWatch.h"
+
+MemGuard::Allocator MemGuard::Allocator::instance = {};
+const char* MemGuard::Allocator::_file = nullptr;
+int MemGuard::Allocator::_line = 0;
+
+using u8 = unsigned char;
 
 static MemGuardWatch watcher;
 
@@ -9,6 +16,47 @@ true;
 #else
 false;
 #endif
+
+MemGuard::Allocator& MemGuard::Allocator::Prepare(const char* file, int line)
+{
+	Allocator::_file = file;
+	Allocator::_line = line;
+
+	return instance;
+}
+
+void* MemGuard::Allocator::Malloc(size_t size)
+{
+	void* ptr = memguard_MallocEx(size, _file, _line);
+	Reset();
+
+	return ptr;
+}
+
+void* MemGuard::Allocator::Calloc(size_t num, size_t size)
+{
+	void* ptr = memguard_CallocEx(num, size, _file, _line);
+	Reset();
+
+	return ptr;
+}
+
+void* MemGuard::Allocator::Realloc(void* ptr, size_t size)
+{
+	void* newPtr = memguard_ReallocEx(ptr, size, _file, _line);
+	Reset();
+
+	return newPtr;
+}
+
+void MemGuard::Allocator::Free(void* ptr)
+{
+	if (!ptr)
+		return;
+
+	memguard_FreeEx(ptr, _file, _line);
+	Reset();
+}
 
 static bool lock = false;
 
@@ -21,6 +69,9 @@ static memguard_LogCallback logCallback = DefaultLogCallback;
 
 void memguard_Report()
 {
+	if (!monitorPointers)
+		return;
+
 	watcher.PrintLeaks();
 	watcher.Reset();
 }
@@ -31,8 +82,7 @@ void* memguard_MallocEx(size_t size, const char* file, int line)
 	void* ptr = memguard_Malloc(size);
 	lock = false;
 
-	if (monitorPointers)
-		watcher.AddAllocation(ptr, file, line, size);
+	watcher.AddAllocation(ptr, file, line, size);
 
 	return ptr;
 }
@@ -43,8 +93,7 @@ void* memguard_CallocEx(size_t num, size_t size, const char* file, int line)
 	void* ptr = memguard_Calloc(num, size);
 	lock = false;
 
-	if (monitorPointers)
-		watcher.AddAllocation(ptr, file, line, num * size);
+	watcher.AddAllocation(ptr, file, line, num * size);
 
 	return ptr;
 }
@@ -55,11 +104,8 @@ void* memguard_ReallocEx(void* ptr, size_t size, const char* file, int line)
 	void* newPtr = memguard_Realloc(ptr, size);
 	lock = false;
 
-	if (monitorPointers)
-	{
-		bool _ = watcher.RemoveAllocation(ptr, file, line);
-		watcher.AddAllocation(newPtr, file, line, size);
-	}
+	bool _ = watcher.RemoveAllocation(ptr, file, line);
+	watcher.AddAllocation(newPtr, file, line, size);
 
 	return newPtr;
 }
@@ -69,11 +115,8 @@ void memguard_FreeEx(void* ptr, const char* file, int line)
 	if (!ptr)
 		return;
 
-	if (monitorPointers)
-	{
-		if (!watcher.RemoveAllocation(ptr, file, line))
-			return;
-	}
+	if (!watcher.RemoveAllocation(ptr, file, line))
+		return;
 
 	lock = true;
 	memguard_Free(ptr);
@@ -82,9 +125,9 @@ void memguard_FreeEx(void* ptr, const char* file, int line)
 
 void* memguard_Malloc(size_t size)
 {
-	void* ptr = std::malloc(size);
+	void* ptr = new u8[size];
 
-	if (monitorPointers && !lock)
+	if (!lock)
 		watcher.AddAllocation(ptr, nullptr, 0, size);
 
 	return ptr;
@@ -92,9 +135,10 @@ void* memguard_Malloc(size_t size)
 
 void* memguard_Calloc(size_t num, size_t size)
 {
-	void* ptr = std::calloc(num, size);
+	void* ptr = new u8[num * size];
+	memset(ptr, 0, num * size);
 
-	if (monitorPointers && !lock)
+	if (!lock)
 		watcher.AddAllocation(ptr, nullptr, 0, num * size);
 
 	return ptr;
@@ -102,27 +146,42 @@ void* memguard_Calloc(size_t num, size_t size)
 
 void* memguard_Realloc(void* ptr, size_t size)
 {
-	void* newPtr = std::realloc(ptr, size);
+	if (!ptr)
+		return new u8[size];
 
-	if (monitorPointers && !lock)
+	if (size == 0)
+	{
+		delete[] (u8*)ptr;
+		return nullptr;
+	}
+
+	u8* newPtr = new u8[size];
+
+	size_t oldSize = watcher.GetSize(ptr);
+	memcpy(newPtr, ptr, std::min(oldSize, size));
+
+	if (!lock)
 	{
 		bool _ = watcher.RemoveAllocation(ptr, nullptr, 0);
 		watcher.AddAllocation(newPtr, nullptr, 0, size);
 	}
 
+	delete[] (u8*)ptr;
+
 	return newPtr;
 }
+
 
 void memguard_Free(void* ptr)
 {
 	if (!ptr)
 		return;
 
-	if (monitorPointers && !lock)
+	if (!lock)
 		if (!watcher.RemoveAllocation(ptr, nullptr, 0))
 			return;
 
-	std::free(ptr);
+	delete[] (u8*)ptr;
 }
 
 void memguard_SetLogCallback(memguard_LogCallback callback)
@@ -138,4 +197,9 @@ void memguard_ResetLogCallback()
 void memguard_LogMessage(const char* message)
 {
 	logCallback(message);
+}
+
+size_t memguard_GetSize(void* ptr)
+{
+	return watcher.GetSize(ptr);
 }

@@ -9,10 +9,10 @@
 
 #ifdef MEMGUARD_ENABLE
 #define MG_ALLOC MemGuard::Allocator::Prepare(__FILE__, __LINE__)
-#define MG_PREPARE MemGuard::Allocator::Prepare(__FILE__, __LINE__)
+#define MG_PREPARE do { MemGuard::Allocator::Prepare(__FILE__, __LINE__); } while (false)
 #else
-#define MG_ALLOC
-#define MG_PREPARE
+#define MG_ALLOC MemGuard::Allocator::Prepare(nullptr, 0)
+#define MG_PREPARE do {} while (false)
 #endif
 
 namespace MemGuard
@@ -25,8 +25,10 @@ namespace MemGuard
 	class Allocator final
 	{
 	private:
-		static inline const char* _file = nullptr;
-		static inline int _line = 0;
+		static Allocator instance;
+
+		static const char* _file;
+		static int _line;
 
 		static inline void Reset()
 		{
@@ -34,40 +36,19 @@ namespace MemGuard
 		}
 
 	public:
-		static Allocator& Prepare(const char* file, int line)
+		static MEMGUARD_API Allocator& Prepare(const char* file, int line);
+
+		static MEMGUARD_API void* Malloc(size_t size);
+
+		static MEMGUARD_API void* Calloc(size_t num, size_t size);
+
+		static MEMGUARD_API void* Realloc(void* ptr, size_t size);
+
+		static MEMGUARD_API void Free(void* ptr);
+
+		static inline size_t GetSize(void* ptr)
 		{
-			static Allocator instance;
-			instance._file = file;
-			instance._line = line;
-
-			return instance;
-		}
-
-		static inline void* Malloc(size_t size)
-		{
-			return memguard_MallocEx(size, _file, _line);
-			Reset();
-		}
-
-		static inline void* Calloc(size_t num, size_t size)
-		{
-			return memguard_CallocEx(num, size, _file, _line);
-			Reset();
-		}
-
-		static inline void* Realloc(void* ptr, size_t size)
-		{
-			return memguard_ReallocEx(ptr, size, _file, _line);
-			Reset();
-		}
-
-		static inline void Free(void* ptr)
-		{
-			if (!ptr)
-				return;
-
-			memguard_FreeEx(ptr, _file, _line);
-			Reset();
+			return memguard_GetSize(ptr);
 		}
 
 		template <typename T, typename... Args>
@@ -99,10 +80,12 @@ namespace MemGuard
 		}
 
 		template <typename T>
-		static inline void DeleteArray(T* ptr, size_t count)
+		static inline void DeleteArray(T* ptr)
 		{
 			if (!ptr)
 				return;
+
+			size_t count = GetSize(ptr) / sizeof(T);
 
 			for (size_t i = 0; i < count; i++)
 				(
@@ -131,6 +114,30 @@ namespace MemGuard
 	inline void Free(void* ptr)
 	{
 		Allocator::Free(ptr);
+	}
+
+	template <typename T, typename... Args>
+	inline T* New(Args&&... args)
+	{
+		return Allocator::New<T>(std::forward<Args>(args)...);
+	}
+
+	template <typename T, typename... Args>
+	inline T* NewArray(size_t count, Args&&... args)
+	{
+		return Allocator::NewArray<T>(count, std::forward<Args>(args)...);
+	}
+
+	template <typename T>
+	static inline void Delete(T* ptr)
+	{
+		Allocator::Delete<T>(ptr);
+	}
+
+	template <typename T>
+	static inline void DeleteArray(T* ptr)
+	{
+		Allocator::DeleteArray<T>(ptr);
 	}
 
 	inline void SetLogCallback(memguard_LogCallback callback)
