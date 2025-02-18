@@ -11,21 +11,45 @@ public:
 	~MyClass() { printf("Destructor\n"); }
 };
 
+class StaticTestFree final
+{
+	int* data;
+
+public:
+	StaticTestFree()
+	{
+		data = MG_ALLOC.NewArray<int>(5);
+	}
+
+	~StaticTestFree()
+	{
+		//Since it is an array of ints, we don't need to call DeleteArray since we don't
+		//need to call the destructor of each element
+		MG_ALLOC.Free(data);
+		data = nullptr;
+	}
+};
+
+class StaticTestNoFree final
+{
+	int* data;
+
+public:
+	StaticTestNoFree()
+	{
+		data = MG_ALLOC.NewArray<int>(5);
+	}
+};
+
+static StaticTestFree IFreeData = {};
+static StaticTestNoFree INoDontFreeData = {};
+
 int main()
 {
-	MG_PREPARE;
-	MyClass* myClass = MemGuard::New<MyClass>(5);
-	MyClass* myClass2 = MG_ALLOC.New<MyClass>(10);
+	MemGuard::Init();
 
-	MyClass* array = MG_ALLOC.NewArray<MyClass>(5, 1);
+	IFreeData.~StaticTestFree();
 
-	MG_PREPARE;
-	MemGuard::Allocator::Delete(myClass);
-
-	printf("Freeing array\n");
-	MemGuard::Allocator::DeleteArray(array);
-
-	//Report a leak from myClass2
 	MemGuard::Report();
 	return 0;
 }

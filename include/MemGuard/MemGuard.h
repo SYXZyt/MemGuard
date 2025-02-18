@@ -32,6 +32,8 @@ MEMGUARD_BEGIN
 
 extern MEMGUARD_API void memguard_Report();
 
+extern MEMGUARD_API void memguard_Init();
+
 extern MEMGUARD_API void* memguard_MallocEx(size_t size, const char* file, int line);
 extern MEMGUARD_API void* memguard_CallocEx(size_t num, size_t size, const char* file, int line);
 extern MEMGUARD_API void* memguard_ReallocEx(void* ptr, size_t size, const char* file, int line);

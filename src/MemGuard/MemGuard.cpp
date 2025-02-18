@@ -2,6 +2,11 @@
 #include <MemGuard/cpp/MemGuard.hpp>
 #include "MemGuardWatch.h"
 
+struct IsStaticTime final
+{
+	bool isStaticTime = true;
+} static staticTrack;
+
 MemGuard::Allocator MemGuard::Allocator::instance = {};
 const char* MemGuard::Allocator::_file = nullptr;
 int MemGuard::Allocator::_line = 0;
@@ -76,13 +81,18 @@ void memguard_Report()
 	watcher.Reset();
 }
 
+void memguard_Init()
+{
+	staticTrack.isStaticTime = false;
+}
+
 void* memguard_MallocEx(size_t size, const char* file, int line)
 {
 	lock = true;
 	void* ptr = memguard_Malloc(size);
 	lock = false;
 
-	watcher.AddAllocation(ptr, file, line, size);
+	watcher.AddAllocation(ptr, file, line, size, staticTrack.isStaticTime);
 
 	return ptr;
 }
@@ -93,7 +103,7 @@ void* memguard_CallocEx(size_t num, size_t size, const char* file, int line)
 	void* ptr = memguard_Calloc(num, size);
 	lock = false;
 
-	watcher.AddAllocation(ptr, file, line, num * size);
+	watcher.AddAllocation(ptr, file, line, num * size, staticTrack.isStaticTime);
 
 	return ptr;
 }
@@ -105,7 +115,7 @@ void* memguard_ReallocEx(void* ptr, size_t size, const char* file, int line)
 	lock = false;
 
 	bool _ = watcher.RemoveAllocation(ptr, file, line);
-	watcher.AddAllocation(newPtr, file, line, size);
+	watcher.AddAllocation(newPtr, file, line, size, staticTrack.isStaticTime);
 
 	return newPtr;
 }
@@ -128,7 +138,7 @@ void* memguard_Malloc(size_t size)
 	void* ptr = new u8[size];
 
 	if (!lock)
-		watcher.AddAllocation(ptr, nullptr, 0, size);
+		watcher.AddAllocation(ptr, nullptr, 0, size, staticTrack.isStaticTime);
 
 	return ptr;
 }
@@ -139,7 +149,7 @@ void* memguard_Calloc(size_t num, size_t size)
 	memset(ptr, 0, num * size);
 
 	if (!lock)
-		watcher.AddAllocation(ptr, nullptr, 0, num * size);
+		watcher.AddAllocation(ptr, nullptr, 0, num * size, staticTrack.isStaticTime);
 
 	return ptr;
 }
@@ -163,7 +173,7 @@ void* memguard_Realloc(void* ptr, size_t size)
 	if (!lock)
 	{
 		bool _ = watcher.RemoveAllocation(ptr, nullptr, 0);
-		watcher.AddAllocation(newPtr, nullptr, 0, size);
+		watcher.AddAllocation(newPtr, nullptr, 0, size, staticTrack.isStaticTime);
 	}
 
 	delete[] (u8*)ptr;

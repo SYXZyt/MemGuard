@@ -15,7 +15,13 @@ private:
 
 	std::mutex mutex;
 	std::unordered_map<void*, MetaData> allocations;
+	std::unordered_map<void*, MetaData> staticAllocations;
 
+	[[nodiscard]]
+	bool TryRemoveAllocationFromNonStatic(void* ptr);
+
+	[[nodiscard]]
+	bool TryRemoveAllocationFromStatic(void* ptr);
 
 public:
 	inline size_t GetSize(void* ptr)
@@ -25,7 +31,7 @@ public:
 		return allocations.at(ptr).size;
 	}
 
-	void AddAllocation(void* ptr, const char* file, std::size_t line, std::size_t size);
+	void AddAllocation(void* ptr, const char* file, std::size_t line, std::size_t size, bool isStatic);
 	[[nodiscard]] bool RemoveAllocation(void* ptr, const char* file, std::size_t line);
 	void PrintLeaks();
 	void Reset() { allocations.clear(); }

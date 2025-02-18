@@ -96,6 +96,11 @@ namespace MemGuard
 		}
 	};
 
+	inline void Init()
+	{
+		memguard_Init();
+	}
+
 	inline void* Malloc(size_t size)
 	{
 		return Allocator::Malloc(size);

@@ -17,7 +17,6 @@ You should only define this for debug builds of your application. The system can
 
 MemGuard provides macros to provide additional data to the watch system. This is done so that when MemGuard reports leaks, it will tell you where the object was created.
 This isn't perfect since if you have a string class, it will tell you that the string caused the leak, but not where that string was made. In the future, a callstack log may also be added.
-To use the extra data, you must define the following macro: `MEMGUARD_FULL`
 
 The macros defined are the following:
 | Macro                   | Overridden function                          |
@@ -29,6 +28,80 @@ The macros defined are the following:
 
 If you are using C++, then two macros will be defined for you. These override the same function and simply prepare the file and line for the allocated.
 If you use the macros, then you gain the benefit of the extra data, but it does make the code look worse in my opinion.
+
+### Initialising
+MemGuard must be initialised before use. This is done by calling either `memguard_Init()` or `MemGuard::Init()` depending on what lanuage you are using.
+This init is used by the library for catching allocations done by static objects since they can cause false positives.
+
+#### Static objects
+MemGuard cannot monitor static allocations and deallocations. It will not report leaks for these objects and will instead report how many allocations were not freed at program end.
+```cpp
+class StaticTestFree final
+{
+	int* data;
+
+public:
+	StaticTestFree()
+	{
+		data = MG_ALLOC.NewArray<int>(5);
+	}
+
+	~StaticTestFree()
+	{
+		//Since it is an array of ints, we don't need to call DeleteArray since we don't
+		//need to call the destructor of each element
+		MG_ALLOC.Free(data);
+		data = nullptr;
+	}
+};
+
+class StaticTestNoFree final
+{
+	int* data;
+
+public:
+	StaticTestNoFree()
+	{
+		data = MG_ALLOC.NewArray<int>(5);
+	}
+};
+
+static StaticTestFree IFreeData = {};
+static StaticTestNoFree INoDontFreeData = {};
+
+int main()
+{
+	MemGuard::Init();
+
+	MemGuard::Report();
+	return 0;
+}
+```
+
+Output:
+```
+[MemGuard] Has 2 static allocations not yet removed
+```
+
+Notice how even though one of the objects frees its data, MemGuard cannot catch it and just lists how many static objects were found.
+
+If this data is freed before the end, then MemGuard will correctly identify that
+```cpp
+int main()
+{
+	MemGuard::Init();
+
+	IFreeData.~StaticTestFree();
+
+	MemGuard::Report();
+	return 0;
+}
+```
+
+Output:
+```
+[MemGuard] Has 1 static allocation not yet removed
+```
 
 ### C
 For C, memguard is as simple as using normal memory functions.
@@ -44,6 +117,8 @@ typedef struct Vec2
 
 int main(int argc, char** argv)
 {
+	memguard_Init();
+
 	Vec2* vec = mgMalloc(sizeof(Vec2));
 	Vec2* vec2 = mgMalloc(sizeof(Vec2));
 
@@ -71,6 +146,7 @@ This contains a namespace and class to redirect calls the to C functions.
 This header also contains a `New` and `Delete` so you can use it on objects to call the constructor and destructor.
 
 Another macro can be used to set the extra data. This is either `MEMGUARD_ALLOC` or `MEMGUARD_PREPARE`. These macros return a reference to the allocator so you can directly call a function after the macro.
+Be aware that if you use `MG_PREPARE` on the line before the alloc, like in the example below, then the reported line in any leaks will be off by one.
 
 Like with C, make sure to shutdown the library with the report function.
 
@@ -90,6 +166,8 @@ public:
 
 int main()
 {
+	MemGuard::Init();
+
 	MG_PREPARE;
 	MyClass* myClass = MemGuard::Allocator::New<MyClass>(5);
 	MyClass* myClass2 = MG_ALLOC.New<MyClass>(10);
@@ -136,7 +214,7 @@ MemGuard::Allocator::Prepare(__FILE__, __LINE__);
 ### Callback
 You can provide a function to be called which will pass you a string of the leak information. You can then do whatever you want with this information.
 This is done by calling `memguard_SetLogCallback` and passing a function pointer to a function that takes a `const char*` as a parameter.
-Additionally using C++, you can use a lambda function to capture variables.
+Additionally using C++, you can use a lambda function for the callback.
 ```cpp
 #include <MemGuard/cpp/MemGuard.hpp>
 
@@ -152,9 +230,8 @@ int main()
 ```
 
 ## Known Issues
-- The library is not thread safe. If you are using threads, you must ensure that only one thread is using the library at a time.
 - If using the C++ header, then you cannot allocate an array of pointers using the C++ `NewArray` allocator. You must manually do it with the other functions.
-- False positives from any heap allocated data in a static object. 
+- Static objects won't catch leaks since they need to deallocate after the library reports errors. 
 
 ## Building
 This library uses CMake. To build, it is as simple as including the source and running `add_subdirectory`.
@@ -162,4 +239,4 @@ Then link either the shared or static library to your project. These use the tar
 Finally, add the include folder which is `MemGuardDir/include/`.
 
 ## Future Plans
-- Add a callstack log to show where the object was created.
+- Add a callstack log 1to show where the object was created.
