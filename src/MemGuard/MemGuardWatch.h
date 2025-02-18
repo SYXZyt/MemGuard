@@ -28,7 +28,13 @@ public:
 	{
 		std::lock_guard<std::mutex> guard(mutex);
 
-		return allocations.at(ptr).size;
+		if (allocations.count(ptr))
+			return allocations.at(ptr).size;
+
+		if (staticAllocations.count(ptr))
+			return staticAllocations.at(ptr).size;
+
+		return 0;
 	}
 
 	void AddAllocation(void* ptr, const char* file, std::size_t line, std::size_t size, bool isStatic);
