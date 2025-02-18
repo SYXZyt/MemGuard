@@ -2,6 +2,8 @@
 #include <MemGuard/cpp/MemGuard.hpp>
 #include "MemGuardWatch.h"
 
+#include <cstring>
+
 struct IsStaticTime final
 {
 	bool isStaticTime = true;
