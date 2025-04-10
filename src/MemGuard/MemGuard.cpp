@@ -137,7 +137,7 @@ void memguard_FreeEx(void* ptr, const char* file, int line)
 	lock = false;
 }
 
-void* memguard_Malloc(size_t size)
+void* memguard_MallocReal(size_t size)
 {
 	void* ptr = new u8[size];
 
@@ -147,7 +147,7 @@ void* memguard_Malloc(size_t size)
 	return ptr;
 }
 
-void* memguard_Calloc(size_t num, size_t size)
+void* memguard_CallocReal(size_t num, size_t size)
 {
 	void* ptr = new u8[num * size];
 	memset(ptr, 0, num * size);
@@ -158,7 +158,7 @@ void* memguard_Calloc(size_t num, size_t size)
 	return ptr;
 }
 
-void* memguard_Realloc(void* ptr, size_t size)
+void* memguard_ReallocReal(void* ptr, size_t size)
 {
 	if (!ptr)
 		return new u8[size];
@@ -186,7 +186,7 @@ void* memguard_Realloc(void* ptr, size_t size)
 }
 
 
-void memguard_Free(void* ptr)
+void memguard_FreeReal(void* ptr)
 {
 	if (!ptr)
 		return;

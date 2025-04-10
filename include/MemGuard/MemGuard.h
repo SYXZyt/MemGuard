@@ -25,17 +25,17 @@ typedef enum MemGuardFlags
 } MemGuardFlags;
 
 #ifdef MEMGUARD_ENABLE
-#define mgMalloc(size) memguard_MallocEx(size, __FILE__, __LINE__)
-#define mgCalloc(num, size) memguard_CallocEx(num, size, __FILE__, __LINE__)
-#define mgRealloc(ptr, size) memguard_ReallocEx(ptr, size, __FILE__, __LINE__)
+#define memguard_Malloc(size) memguard_MallocEx(size, __FILE__, __LINE__)
+#define memguard_Calloc(num, size) memguard_CallocEx(num, size, __FILE__, __LINE__)
+#define memguard_Realloc(ptr, size) memguard_ReallocEx(ptr, size, __FILE__, __LINE__)
 
-#define mgFree(ptr) memguard_FreeEx(ptr, __FILE__, __LINE__)
+#define memguard_Free(ptr) memguard_FreeEx(ptr, __FILE__, __LINE__)
 #else
-#define mgMalloc(size) memguard_Malloc(size)
-#define mgCalloc(num, size) memguard_Calloc(num, size)
-#define mgRealloc(ptr, size) memguard_Realloc(ptr, size)
+#define memguard_Malloc(size) memguard_MallocReal(size)
+#define memguard_Calloc(num, size) memguard_CallocReal(num, size)
+#define memguard_Realloc(ptr, size) memguard_ReallocReal(ptr, size)
 
-#define mgFree(ptr) memguard_Free(ptr)
+#define memguard_Free(ptr) memguard_Free(ptr)
 #endif
 
 extern MEMGUARD_API void memguard_Report();
@@ -48,11 +48,11 @@ extern MEMGUARD_API void* memguard_ReallocEx(void* ptr, size_t size, const char*
 
 extern MEMGUARD_API void memguard_FreeEx(void* ptr, const char* file, int line);
 
-extern MEMGUARD_API void* memguard_Malloc(size_t size);
-extern MEMGUARD_API void* memguard_Calloc(size_t num, size_t size);
-extern MEMGUARD_API void* memguard_Realloc(void* ptr, size_t size);
+extern MEMGUARD_API void* memguard_MallocReal(size_t size);
+extern MEMGUARD_API void* memguard_CallocReal(size_t num, size_t size);
+extern MEMGUARD_API void* memguard_ReallocReal(void* ptr, size_t size);
 
-extern MEMGUARD_API void memguard_Free(void* ptr);
+extern MEMGUARD_API void memguard_FreeReal(void* ptr);
 
 extern MEMGUARD_API void memguard_SetLogCallback(memguard_LogCallback callback);
 extern MEMGUARD_API void memguard_ResetLogCallback();

@@ -19,12 +19,12 @@ MemGuard provides macros to provide additional data to the watch system. This is
 This isn't perfect since if you have a string class, it will tell you that the string caused the leak, but not where that string was made. In the future, a callstack log may also be added.
 
 The macros defined are the following:
-| Macro                   | Overridden function                          |
-| ----------------------- | -------------------------------------------- |
-| `mgMalloc(size)`        | `memguard_MallocEx(size, file, line)`        |
-| `mgCalloc(count, size)` | `memguard_CallocEx(count, size, file, line)` |
-| `mgRealloc(ptr, size)`  | `memguard_ReallocEx(ptr, size, file, line)`  |
-| `mgFree(ptr)`           | `memguard_FreeEx(ptr, file, line)`           |
+| Macro                          | Overridden function                          |
+| ------------------------------ | -------------------------------------------- |
+| `memguard_Malloc(size)`        | `memguard_MallocEx(size, file, line)`        |
+| `memguard_Calloc(count, size)` | `memguard_CallocEx(count, size, file, line)` |
+| `memguard_Realloc(ptr, size)`  | `memguard_ReallocEx(ptr, size, file, line)`  |
+| `memguard_Free(ptr)`           | `memguard_FreeEx(ptr, file, line)`           |
 
 If you are using C++, then two macros will be defined for you. These override the same function and simply prepare the file and line for the allocated.
 If you use the macros, then you gain the benefit of the extra data, but it does make the code look worse in my opinion.
