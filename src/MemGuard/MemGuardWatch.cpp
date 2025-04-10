@@ -42,7 +42,7 @@ std::string MemGuardWatch::GetStackTraceFormatted()
 	{
 		ss << "\t\t";
 		ss << trace.size() - 1 - i++ << "| ";
-		
+
 		if (!entry.description().empty())
 			ss << entry.description() << "\t\t";
 
@@ -84,6 +84,7 @@ bool MemGuardWatch::RemoveAllocation(void* ptr, const char* file, std::size_t li
 		if (file)
 			ss << "\nAttempted at file: " << file << " at line: " << line;
 
+#ifndef MEMGUARD_NO_STACKTRACE
 		if (stackTrace)
 		{
 			auto trace = std::stacktrace::current();
@@ -97,7 +98,7 @@ bool MemGuardWatch::RemoveAllocation(void* ptr, const char* file, std::size_t li
 			memguard_LogMessage(ss.str().c_str());
 			return false;
 		}
-
+#endif
 		memguard_LogMessage(ss.str().c_str());
 	}
 
@@ -127,7 +128,8 @@ void MemGuardWatch::PrintLeaks()
 	if (!staticAllocations.empty())
 	{
 		std::stringstream ss;
-		ss << "Has " << staticAllocations.size() << " static allocation" << (staticAllocations.size() != 1 ? "s" : "") << " not yet removed";
+		ss << "Has " << staticAllocations.size() << " static allocation" << (staticAllocations.size() != 1 ? "s" : "")
+			<< " not yet removed";
 
 		memguard_LogMessage(ss.str().c_str());
 	}
