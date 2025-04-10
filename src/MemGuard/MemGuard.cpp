@@ -65,6 +65,11 @@ void MemGuard::Allocator::Free(void* ptr)
 	Reset();
 }
 
+bool MemGuard::Allocator::IsOwned(void* ptr)
+{
+	return memguard_IsOwned(ptr);
+}
+
 static bool lock = false;
 
 static void DefaultLogCallback(const char* message)

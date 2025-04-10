@@ -46,6 +46,8 @@ namespace MemGuard
 
 		static MEMGUARD_API void Free(void* ptr);
 
+		static MEMGUARD_API bool IsOwned(void* ptr);
+
 		static inline size_t GetSize(void* ptr)
 		{
 			return memguard_GetSize(ptr);
@@ -119,6 +121,11 @@ namespace MemGuard
 	inline void Free(void* ptr)
 	{
 		Allocator::Free(ptr);
+	}
+
+	inline bool IsOwned(void* ptr)
+	{
+		return Allocator::IsOwned(ptr);
 	}
 
 	template <typename T, typename... Args>
