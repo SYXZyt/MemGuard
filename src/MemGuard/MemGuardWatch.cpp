@@ -97,6 +97,8 @@ bool MemGuardWatch::RemoveAllocation(void* ptr, const char* file, std::size_t li
 			memguard_LogMessage(ss.str().c_str());
 			return false;
 		}
+
+		memguard_LogMessage(ss.str().c_str());
 	}
 
 	return true;
