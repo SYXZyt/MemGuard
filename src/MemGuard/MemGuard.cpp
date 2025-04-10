@@ -98,7 +98,7 @@ void memguard_Init(MemGuardFlags flags)
 void* memguard_MallocEx(size_t size, const char* file, int line)
 {
 	lock = true;
-	void* ptr = memguard_Malloc(size);
+	void* ptr = memguard_MallocReal(size);
 	lock = false;
 
 	watcher.AddAllocation(ptr, file, line, size, staticTrack.isStaticTime);
@@ -109,7 +109,7 @@ void* memguard_MallocEx(size_t size, const char* file, int line)
 void* memguard_CallocEx(size_t num, size_t size, const char* file, int line)
 {
 	lock = true;
-	void* ptr = memguard_Calloc(num, size);
+	void* ptr = memguard_CallocReal(num, size);
 	lock = false;
 
 	watcher.AddAllocation(ptr, file, line, num * size, staticTrack.isStaticTime);
@@ -120,7 +120,7 @@ void* memguard_CallocEx(size_t num, size_t size, const char* file, int line)
 void* memguard_ReallocEx(void* ptr, size_t size, const char* file, int line)
 {
 	lock = true;
-	void* newPtr = memguard_Realloc(ptr, size);
+	void* newPtr = memguard_ReallocReal(ptr, size);
 	lock = false;
 
 	bool _ = watcher.RemoveAllocation(ptr, file, line);
