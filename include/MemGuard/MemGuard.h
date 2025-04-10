@@ -60,4 +60,6 @@ extern MEMGUARD_API void memguard_LogMessage(const char* message);
 
 extern MEMGUARD_API size_t memguard_GetSize(void* ptr);
 
+extern MEMGUARD_API bool memguard_IsOwned(void* ptr);
+
 MEMGUARD_END

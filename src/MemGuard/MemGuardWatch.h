@@ -44,6 +44,19 @@ public:
 		return 0;
 	}
 
+	inline bool IsOwned(void* ptr)
+	{
+		std::lock_guard<std::mutex> guard(mutex);
+
+		if (allocations.count(ptr))
+			return true;
+
+		if (staticAllocations.count(ptr))
+			return true;
+
+		return false;
+	}
+
 	void AddAllocation(void* ptr, const char* file, std::size_t line, std::size_t size, bool isStatic);
 	[[nodiscard]] bool RemoveAllocation(void* ptr, const char* file, std::size_t line);
 	void PrintLeaks();

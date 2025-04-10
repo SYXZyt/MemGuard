@@ -217,3 +217,8 @@ size_t memguard_GetSize(void* ptr)
 {
 	return watcher.GetSize(ptr);
 }
+
+bool memguard_IsOwned(void* ptr)
+{
+	return watcher.IsOwned(ptr);
+}
