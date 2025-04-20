@@ -27,3 +27,11 @@ if (MEMGUARD_NO_STACKTRACE)
 endif ()
 
 add_subdirectory(testing)
+
+set_target_properties(MemGuard PROPERTIES
+	DEBUG_POSTFIX "-d"
+)
+
+set_target_properties(MemGuardStatic PROPERTIES
+	DEBUG_POSTFIX "-d"
+)
