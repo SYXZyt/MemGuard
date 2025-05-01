@@ -39,6 +39,12 @@ namespace MemGuard
 		static MEMGUARD_API Allocator& Prepare(const char* file, int line);
 
 		static MEMGUARD_API void* Malloc(size_t size);
+		
+		template <typename T>
+		static inline T* Malloc(size_t size)
+		{
+			return (T*)Malloc(size);
+		}
 
 		static MEMGUARD_API void* Calloc(size_t num, size_t size);
 
@@ -101,6 +107,12 @@ namespace MemGuard
 	inline void Init(MemGuardFlags flags = MemGuardFlags::MG_NONE)
 	{
 		memguard_Init(flags);
+	}
+
+	template <typename T>
+	inline T* Malloc(size_t size)
+	{
+		return Allocator::Malloc<T>(size);
 	}
 
 	inline void* Malloc(size_t size)

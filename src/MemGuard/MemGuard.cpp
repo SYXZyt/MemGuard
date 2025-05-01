@@ -32,6 +32,21 @@ MemGuard::Allocator& MemGuard::Allocator::Prepare(const char* file, int line)
 	return instance;
 }
 
+static bool isTrackingFrame = false;
+static MemGuardFrame* frame = nullptr;
+
+static MemGuardFrame* GetCurrentFrame()
+{
+	if (!frame)
+		return nullptr;
+
+	MemGuardFrame* curr = frame;
+	while (curr->next)
+		curr = curr->next;
+
+	return curr;
+}
+
 void* MemGuard::Allocator::Malloc(size_t size)
 {
 	void* ptr = memguard_MallocEx(size, _file, _line);
@@ -102,6 +117,16 @@ void* memguard_MallocEx(size_t size, const char* file, int line)
 	lock = false;
 
 	watcher.AddAllocation(ptr, file, line, size, staticTrack.isStaticTime);
+
+	if (isTrackingFrame)
+	{
+		MemGuardFrame* frame = memguard_FrameCreate(size, file, line);
+		MemGuardFrame* curr = GetCurrentFrame();
+		if (curr)
+			curr->next = frame;
+		else
+			::frame = frame;
+	}
 
 	return ptr;
 }
@@ -226,4 +251,20 @@ size_t memguard_GetSize(void* ptr)
 bool memguard_IsOwned(void* ptr)
 {
 	return watcher.IsOwned(ptr);
+}
+
+void memguard_BeginFrame()
+{
+	//Hope you freed this >:)
+	frame = nullptr;
+	isTrackingFrame = true;
+}
+
+MemGuardFrame* memguard_EndFrame()
+{
+	isTrackingFrame = false;
+	MemGuardFrame* curr = frame;
+	frame = nullptr;
+
+	return curr;
 }

@@ -5,7 +5,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 set(CMAKE_CXX_STANDARD 23)
 
-set(MEMGUARD_SRC src/MemGuard/MemGuard.cpp "src/MemGuard/MemGuardWatch.cpp")
+set(MEMGUARD_SRC src/MemGuard/MemGuard.cpp src/MemGuard/MemGuardWatch.cpp src/MemGuard/MemGuardFrameTrack.cpp)
 
 option(MEMGUARD_ENABLE_TRACKING "Enable pointer tracking and leak detection" ON)
 option(MEMGUARD_NO_STACKTRACE "Disables the <stacktrace> header for older C++ support" OFF)

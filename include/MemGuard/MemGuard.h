@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <MemGuard/dllapi.h>
+#include <MemGuard/MemGuardFrameTrack.h>
 
 typedef void (*memguard_LogCallback)(const char* message);
 
@@ -41,6 +42,9 @@ typedef enum MemGuardFlags
 extern MEMGUARD_API void memguard_Report();
 
 extern MEMGUARD_API void memguard_Init(MemGuardFlags flags);
+
+extern MEMGUARD_API void memguard_BeginFrame();
+extern MEMGUARD_API MemGuardFrame* memguard_EndFrame();
 
 extern MEMGUARD_API void* memguard_MallocEx(size_t size, const char* file, int line);
 extern MEMGUARD_API void* memguard_CallocEx(size_t num, size_t size, const char* file, int line);
