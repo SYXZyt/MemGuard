@@ -105,9 +105,17 @@ bool MemGuardWatch::RemoveAllocation(void* ptr, const char* file, std::size_t li
 	return true;
 }
 
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+
 void MemGuardWatch::PrintLeaks()
 {
 	std::lock_guard<std::mutex> guard(mutex);
+
+	char userProfile[MAX_PATH];
+	std::string userPath;
+	if (ExpandEnvironmentStringsA("%USERPROFILE%", userProfile, MAX_PATH))
+		userPath = userProfile;
 
 	for (auto& pair : allocations)
 	{
@@ -117,10 +125,34 @@ void MemGuardWatch::PrintLeaks()
 		ss << "Memory Leak at 0x" << pair.first << " of size " << data.size;
 
 		if (!data.file.empty())
-			ss << "\nCreated at file: " << data.file << " at line: " << data.line;
+		{
+			ss << "\nCreated at file: ";
+
+			std::string fileName = data.file;
+
+			if (!userPath.empty() && fileName.compare(0, userPath.size(), userPath) == 0)
+				fileName = fileName.substr(userPath.size());
+
+			ss << fileName << " at line: " << data.line;
+		}
 
 		if (stackTrace && !data.stackTrace.empty())
-			ss << "\n\tStack Trace:\n" << data.stackTrace << '\n';
+		{
+			std::string stack = data.stackTrace;
+
+			if (!userPath.empty())
+			{
+				// Replace all occurrences of userPath in stackTrace with empty string
+				size_t pos = 0;
+
+				while ((pos = stack.find(userPath, pos)) != std::string::npos)
+				{
+					stack.erase(pos, userPath.size());
+				}
+			}
+
+			ss << "\n\tStack Trace:\n" << stack << '\n';
+		}
 
 		memguard_LogMessage(ss.str().c_str());
 	}
