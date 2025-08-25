@@ -1,3 +1,4 @@
+#include <cstring>
 #include <MemGuard/MemGuardFrameTrack.h>
 #include <MemGuard/cpp/MemGuard.hpp>
 #include <memory>
