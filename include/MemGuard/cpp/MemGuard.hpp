@@ -104,6 +104,46 @@ namespace MemGuard
 		}
 	};
 
+	template <typename T>
+	struct STLAllocator final
+	{
+		using value_type = T;
+
+		STLAllocator() = default;
+
+		template <typename U>
+		STLAllocator(const STLAllocator<U>&) noexcept {}
+
+		T* allocate(std::size_t n)
+		{
+			if (n > std::size_t(-1) / sizeof(T))
+				throw std::bad_alloc();
+
+			void* ptr = Allocator::Malloc(n * sizeof(T));
+			if (!ptr)
+				throw std::bad_alloc();
+
+			return (T*)ptr;
+		}
+
+		void deallocate(T* ptr, std::size_t) noexcept
+		{
+			Allocator::Free(ptr);
+		}
+
+		template <typename U>
+		bool operator==(const STLAllocator<U>&) const noexcept
+		{
+			return true;
+		}
+
+		template <typename U>
+		bool operator!=(const STLAllocator<U>&) const noexcept
+		{
+			return false;
+		}
+	};
+
 	inline void Init(MemGuardFlags flags = MemGuardFlags::MG_NONE)
 	{
 		memguard_Init(flags);

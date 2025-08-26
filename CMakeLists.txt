@@ -16,6 +16,8 @@ add_library(MemGuardStatic STATIC ${MEMGUARD_SRC})
 target_include_directories(MemGuard PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
 target_include_directories(MemGuardStatic PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
 
+target_compile_definitions(MemGuard PRIVATE MEMGUARD_EXPORT)
+
 if(MEMGUARD_ENABLE_TRACKING)
 	target_compile_definitions(MemGuard PUBLIC MEMGUARD_ENABLE)
 	target_compile_definitions(MemGuardStatic PUBLIC MEMGUARD_ENABLE)
