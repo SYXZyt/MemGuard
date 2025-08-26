@@ -1,6 +1,6 @@
 #pragma once
 #include <MemGuard/dllapi.h>
-#include <cstddef>
+#include <stddef.h>
 
 #ifdef __cplusplus
 #define	MEMGUARD_BEGIN extern "C" {
